@@ -827,6 +827,9 @@ endif
 KBUILD_CFLAGS += $(call cc-disable-warning, unused-but-set-variable)
 
 KBUILD_CFLAGS += $(call cc-disable-warning, unused-const-variable)
+
+# clang 17 is stricter than the compiler this tree was written for.
+KBUILD_CFLAGS += -Wno-fortify-source -Wno-error -Wno-ignored-optimization-argument -Wno-unused-command-line-argument -Wno-deprecated-non-prototype
 ifdef CONFIG_FRAME_POINTER
 KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
 else
