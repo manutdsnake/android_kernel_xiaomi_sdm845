@@ -614,8 +614,6 @@ static uint16_t cam_sensor_id_by_mask(struct cam_sensor_ctrl_t *s_ctrl,
 
 void cam_sensor_shutdown(struct cam_sensor_ctrl_t *s_ctrl)
 {
-	struct cam_sensor_power_ctrl_t *power_info =
-		&s_ctrl->sensordata->power_info;
 	int rc = 0;
 
 	s_ctrl->is_probe_succeed = 0;
@@ -632,12 +630,13 @@ void cam_sensor_shutdown(struct cam_sensor_ctrl_t *s_ctrl)
 	s_ctrl->bridge_intf.device_hdl = -1;
 	s_ctrl->bridge_intf.link_hdl = -1;
 	s_ctrl->bridge_intf.session_hdl = -1;
-	kfree(power_info->power_setting);
-	kfree(power_info->power_down_setting);
-	power_info->power_setting = NULL;
-	power_info->power_down_setting = NULL;
-	power_info->power_setting_size = 0;
-	power_info->power_down_setting_size = 0;
+	/*
+	 * Keep the probe-time power sequence.  CamX closes a sensor's subdev
+	 * while it is still acquired (the Mi 8's IR camera does, on every
+	 * session end) and then acquires it again without a new probe; with
+	 * the arrays freed here that acquire has no power sequence at all and
+	 * the sensor never powers up.  A new probe replaces them anyway.
+	 */
 	s_ctrl->streamon_count = 0;
 	s_ctrl->streamoff_count = 0;
 	s_ctrl->sensor_state = CAM_SENSOR_INIT;
